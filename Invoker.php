@@ -25,7 +25,7 @@ class Invoker {
         }
     }
 
-    public function add_command($key, $command) {
+    public function addCommand($key, $command) {
         $this->commands["/" . $key] = $command;
     }
 

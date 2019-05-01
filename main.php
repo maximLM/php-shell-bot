@@ -13,6 +13,10 @@ include "Invoker.php";
 include('vendor/autoload.php');
 $telegramApi = new Client();
 $proc = new Process("/bin/sh");
+
+$proc->putInput("cd ~/\n");
+$proc->getOutput(2);
+
 $invoker = new Invoker(function($update) use($telegramApi, $proc) {
     $text = $update->message->text;
     $chat_id = $update->message->chat->id;
@@ -26,29 +30,27 @@ $invoker = new Invoker(function($update) use($telegramApi, $proc) {
     $telegramApi->sendMessage($chat_id, $result);
 });
 
-$invoker->add_command("restart", function($update) use($telegramApi, $proc) {
+$invoker->addCommand("restart", function($update) use($telegramApi, $proc) {
     $proc->close();
     $proc->open();
+    $proc->putInput("cd ~/\n");
+    $proc->getOutput(2);
     $telegramApi->sendMessage($update->message->chat->id, "restarted");
 });
 
-$invoker->add_command("test", function($update) use($telegramApi, $proc) {
+$invoker->addCommand("test", function($update) use($telegramApi, $proc) {
     $telegramApi->sendMessage($update->message->chat->id, "congratulations u used test command");
 });
 
-$invoker->add_command("help", function($update) use($telegramApi) {
+$invoker->addCommand("help", function($update) use($telegramApi) {
     $telegramApi->sendMessage($update->message->chat->id, "TODO help");
 });
 
-$invoker->add_command("upload", function($update) use($telegramApi, $proc) {
-    $telegramApi->sendMessage($update->message->chat->id, "TODO upload");
-});
-
-$invoker->add_command("download", function($update) use($telegramApi, $proc) {
+$invoker->addCommand("download", function($update) use($telegramApi, $proc) {
     $telegramApi->sendMessage($update->message->chat->id, "TODO download");
 });
 
-$invoker->add_command("clear", function($update) use($telegramApi, $proc) {
+$invoker->addCommand("clear", function($update) use($telegramApi, $proc) {
     $telegramApi->sendMessage($update->message->chat->id, "TODO clear");
 });
 
@@ -56,6 +58,10 @@ while (true) {
     sleep(2);
     $updates = $telegramApi->getUpdates();
     foreach ($updates as $update){
+        if (isset($update->message->document)) {
+            $proc->putInput("pwd\n");
+            $telegramApi->saveFile($update, $proc->getOutput(2));
+        }
         if (isset($update->message->text)) {
             $invoker->run($update);
         }
