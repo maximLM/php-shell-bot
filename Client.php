@@ -33,7 +33,19 @@ class Client
         curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxy_pwd);
     }
 
-    protected function query($method, $params = []) {
+    public function sendMedia($chat_id, $file_path) {
+        $file_path = str_replace("\n", '', $file_path);
+        $post = array('chat_id' => $chat_id, 'document'=>new CurlFile($file_path));
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL,"https://api.telegram.org/bot" . $this->token. "/sendDocument");
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        $this->setCurlProxy($ch);
+        curl_exec ($ch);
+        curl_close ($ch);
+    }
+
+    public function query($method, $params = []) {
         $url = $this->makeUrl($method, $params);
 
         $ch = curl_init();

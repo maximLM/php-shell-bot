@@ -14,6 +14,7 @@ include('vendor/autoload.php');
 $telegramApi = new Client();
 $proc = new Process("/bin/sh");
 
+$telegramApi->query('deleteWebhook');
 $proc->putInput("cd ~/\n");
 $proc->getOutput(2);
 
@@ -47,7 +48,10 @@ $invoker->addCommand("help", function($update) use($telegramApi) {
 });
 
 $invoker->addCommand("download", function($update) use($telegramApi, $proc) {
-    $telegramApi->sendMessage($update->message->chat->id, "TODO download");
+    $local_path = str_replace('/download ', '', $update->message->text);
+    $proc->putInput("pwd\n");
+    $abs_path = $proc->getOutput(2) . "/" . $local_path;
+    $telegramApi->sendMedia($update->message->chat->id, $abs_path);
 });
 
 $invoker->addCommand("clear", function($update) use($telegramApi, $proc) {
